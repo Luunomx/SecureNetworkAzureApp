@@ -1,0 +1,45 @@
+@model CloudSoft.Models.Subscriber
+
+@{
+    ViewData["Title"] = "Newsletter Signup";
+}
+
+<h2>Newsletter Signup</h2>
+
+<!-- Display validation summary for model-level errors -->
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @Html.ValidationSummary(false, null, new { @class = "text-danger" })
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"><i class="fas fa-times"></i></button>
+    </div>
+}
+
+<!-- Display message from the TempData sent by the controller -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"><i class="fas fa-times"></i></button>
+    </div>
+}
+
+<form asp-action="Subscribe" method="post">
+    <div class="form-group">
+        <label asp-for="Name"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Email"></label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+    <div class="mt-3">
+        <button type="submit" class="btn btn-primary">Sign Up</button>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,52 @@
+@model List<CloudSoft.Models.Subscriber>
+
+@{
+    ViewData["Title"] = "Subscriber List";
+}
+
+<h2>Subscriber List</h2>
+
+<!-- Display message from the TempData sent by the controller -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"><i class="fas fa-times"></i></button>
+    </div>
+}
+
+@if (Model.Count == 0)
+{
+    <p>No subscribers yet.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var subscriber in Model)
+            {
+                <tr>
+                    <td>@subscriber.Name</td>
+                    <td>@subscriber.Email</td>
+                    <td>
+                        <form asp-action="Unsubscribe" method="post" class="d-inline"
+                                onsubmit="return confirm('Are you sure you want to unsubscribe @subscriber.Email?');">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="email" value="@subscriber.Email" />
+                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                <i class="fas fa-user-minus me-1"></i>Unsubscribe
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

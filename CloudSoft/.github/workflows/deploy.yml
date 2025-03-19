@@ -1,0 +1,48 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build_and_deploy:
+    # Byt till 'ubuntu-latest' om du vill köra på GitHub-hosted runner,
+    # eller håll kvar 'self-hosted' om du har en egen runner installerad
+    runs-on: self-hosted
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          # Använd exakt den version du har lokalt: 9.0.201
+          dotnet-version: '9.0.201'
+
+      - name: Build
+        run: dotnet build --configuration Release
+        env:
+          MongoDb__ConnectionString: ${{ secrets.MONGODB_CONNECTION_STRING }}
+          AzureBlob__ConnectionString: ${{ secrets.AZURE_BLOB_CONNECTION_STRING }}
+          FeatureFlags__UseMongoDb: "true"
+          FeatureFlags__UseAzureStorage: "true"
+
+      - name: Publish
+        run: dotnet publish --configuration Release -o publish_output
+        env:
+          MongoDb__ConnectionString: ${{ secrets.MONGODB_CONNECTION_STRING }}
+          AzureBlob__ConnectionString: ${{ secrets.AZURE_BLOB_CONNECTION_STRING }}
+          FeatureFlags__UseMongoDb: "true"
+          FeatureFlags__UseAzureStorage: "true"
+
+      - name: Deploy
+        run: |
+          echo "Deploying to server..."
+          # Här kan du t.ex. köra kommandon för att kopiera över filer till en server
+          # via scp, ftp, rsync eller använda andra Action-steg för deployment.
+        env:
+          MongoDb__ConnectionString: ${{ secrets.MONGODB_CONNECTION_STRING }}
+          AzureBlob__ConnectionString: ${{ secrets.AZURE_BLOB_CONNECTION_STRING }}
+          FeatureFlags__UseMongoDb: "true"
+          FeatureFlags__UseAzureStorage: "true"
