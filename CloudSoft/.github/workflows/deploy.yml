@@ -6,8 +6,8 @@ on:
 
 jobs:
   build_and_deploy:
-    # Byt till 'ubuntu-latest' om du vill köra på GitHub-hosted runner,
-    # eller håll kvar 'self-hosted' om du har en egen runner installerad
+    # Använd 'self-hosted' om du har en egen runner i ditt säkra nätverk,
+    # annars kan du byta till 'ubuntu-latest' om du vill använda en GitHub-hosted runner.
     runs-on: self-hosted
 
     steps:
@@ -17,7 +17,6 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
-          # Använd exakt den version du har lokalt: 9.0.201
           dotnet-version: '9.0.201'
 
       - name: Build
@@ -36,13 +35,14 @@ jobs:
           FeatureFlags__UseMongoDb: "true"
           FeatureFlags__UseAzureStorage: "true"
 
-      - name: Deploy
+      - name: Configure SSH
         run: |
-          echo "Deploying to server..."
-          # Här kan du t.ex. köra kommandon för att kopiera över filer till en server
-          # via scp, ftp, rsync eller använda andra Action-steg för deployment.
-        env:
-          MongoDb__ConnectionString: ${{ secrets.MONGODB_CONNECTION_STRING }}
-          AzureBlob__ConnectionString: ${{ secrets.AZURE_BLOB_CONNECTION_STRING }}
-          FeatureFlags__UseMongoDb: "true"
-          FeatureFlags__UseAzureStorage: "true"
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+        shell: bash
+
+      - name: Deploy via SCP
+        run: |
+          scp -o StrictHostKeyChecking=no -r publish_output/* azureuser@<server-ip>:/home/azureuser/app/
+        shell: bash
