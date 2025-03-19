@@ -1,0 +1,27 @@
+# Visual Studio-specifika filer
+.vs/
+*.user
+*.suo
+*.sln.docstates
+
+# Byggmappar
+bin/
+obj/
+
+# NuGet-paket
+packages/
+
+# Lokala konfigurationsfiler (t.ex. utvecklingsspecifika inställningar)
+appsettings.Development.json
+
+# Temporära filer
+*.tmp
+*.temp
+*.log
+
+# OS-genererade filer
+.DS_Store
+Thumbs.db
+
+# Rider
+.idea/
