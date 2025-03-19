@@ -1,4 +1,4 @@
-# Visual Studio-specifika filer
+# Visual Studio-specifika filer och mappar
 .vs/
 *.user
 *.suo
@@ -8,20 +8,23 @@
 bin/
 obj/
 
-# NuGet-paket
+# NuGet-paket och tillhörande mappar
+*.nupkg
 packages/
 
-# Lokala konfigurationsfiler (t.ex. utvecklingsspecifika inställningar)
+# Lokala konfigurationsfiler (för att undvika att känsliga uppgifter laddas upp)
 appsettings.Development.json
+appsettings.Local.json
 
-# Temporära filer
-*.tmp
-*.temp
+# Miljövariabelfil (för lokala hemligheter, t.ex. .env)
+.env
+
+# IDE-specifika mappar (t.ex. Rider)
+.idea/
+
+# Loggfiler
 *.log
 
 # OS-genererade filer
 .DS_Store
 Thumbs.db
-
-# Rider
-.idea/
