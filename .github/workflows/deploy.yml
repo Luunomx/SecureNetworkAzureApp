@@ -15,16 +15,16 @@ jobs:
       - name: Build
         run: dotnet build CloudSoft/CloudSoft.sln --configuration Release
         env:
-          MongoDb__ConnectionString: ${{ secrets.MONGODB_CONNECTION_STRING }}
-          AzureBlob__ConnectionString: ${{ secrets.AZURE_BLOB_CONNECTION_STRING }}
+          MongoDb__ConnectionString: ${{ secrets.MONGODB_CONNECTION_STRING || 'mongodb://localhost:27017/defaultdb' }}
+          AzureBlob__ConnectionString: ${{ secrets.AZURE_BLOB_CONNECTION_STRING || 'DefaultAzureBlobPlaceholder' }}
           FeatureFlags__UseMongoDb: "true"
           FeatureFlags__UseAzureStorage: "true"
 
       - name: Publish
         run: dotnet publish CloudSoft/CloudSoft.csproj --configuration Release -o publish_output
         env:
-          MongoDb__ConnectionString: ${{ secrets.MONGODB_CONNECTION_STRING }}
-          AzureBlob__ConnectionString: ${{ secrets.AZURE_BLOB_CONNECTION_STRING }}
+          MongoDb__ConnectionString: ${{ secrets.MONGODB_CONNECTION_STRING || 'mongodb://localhost:27017/defaultdb' }}
+          AzureBlob__ConnectionString: ${{ secrets.AZURE_BLOB_CONNECTION_STRING || 'DefaultAzureBlobPlaceholder' }}
           FeatureFlags__UseMongoDb: "true"
           FeatureFlags__UseAzureStorage: "true"
 
