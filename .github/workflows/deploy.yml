@@ -21,7 +21,7 @@ jobs:
           FeatureFlags__UseAzureStorage: "true"
 
       - name: Publish
-        run: dotnet publish CloudSoft/CloudSoft.sln --configuration Release -o publish_output
+        run: dotnet publish CloudSoft/CloudSoft.csproj --configuration Release -o publish_output
         env:
           MongoDb__ConnectionString: ${{ secrets.MONGODB_CONNECTION_STRING }}
           AzureBlob__ConnectionString: ${{ secrets.AZURE_BLOB_CONNECTION_STRING }}
