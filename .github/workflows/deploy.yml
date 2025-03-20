@@ -5,8 +5,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build_and_deploy:
-    # Another comment to make a change
+  build_and_deploy: 
     # Använd 'self-hosted' om du har en egen runner i ditt säkra nätverk,
     # annars kan du byta till 'ubuntu-latest' om du vill använda en GitHub-hosted runner.
     runs-on: self-hosted
