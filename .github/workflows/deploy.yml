@@ -5,17 +5,15 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build_and_deploy: 
-    # Använd 'self-hosted' om du har en egen runner i ditt säkra nätverk,
-    # annars kan du byta till 'ubuntu-latest' om du vill använda en GitHub-hosted runner.
+  build_and_deploy:
     runs-on: self-hosted
 
     steps:
       - name: Check out code
         uses: actions/checkout@v4
-        
+
       - name: Build
-        run: dotnet build --configuration Release
+        run: dotnet build CloudSoft/CloudSoft.sln --configuration Release
         env:
           MongoDb__ConnectionString: ${{ secrets.MONGODB_CONNECTION_STRING }}
           AzureBlob__ConnectionString: ${{ secrets.AZURE_BLOB_CONNECTION_STRING }}
@@ -23,7 +21,7 @@ jobs:
           FeatureFlags__UseAzureStorage: "true"
 
       - name: Publish
-        run: dotnet publish --configuration Release -o publish_output
+        run: dotnet publish CloudSoft/CloudSoft.sln --configuration Release -o publish_output
         env:
           MongoDb__ConnectionString: ${{ secrets.MONGODB_CONNECTION_STRING }}
           AzureBlob__ConnectionString: ${{ secrets.AZURE_BLOB_CONNECTION_STRING }}
@@ -39,5 +37,5 @@ jobs:
 
       - name: Deploy via SCP
         run: |
-          scp -o StrictHostKeyChecking=no -r publish_output/* azureuser@<server-ip>:/home/azureuser/app/
+          scp -o StrictHostKeyChecking=no -r publish_output/* azureuser@10.0.3.4:/home/azureuser/app/
         shell: bash
