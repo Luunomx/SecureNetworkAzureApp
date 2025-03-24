@@ -1,100 +1,99 @@
-using CloudSoft.Services;
-using CloudSoft.Repositories;
-using CloudSoft.Models;
 using CloudSoft.Configurations;
+using CloudSoft.Models;
+using CloudSoft.Repositories;
+using CloudSoft.Services;
 using CloudSoft.Storage;
 using MongoDB.Driver;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Lägg till controllers med views
 builder.Services.AddControllersWithViews();
 
-// Check if MongoDB should be used (default to false if not specified)
+// Bind konfigurationen från sektionen "MongoDb" (se till att din appsettings.json har "MongoDb")
+builder.Services.Configure<MongoDbOptions>(
+    builder.Configuration.GetSection("MongoDb"));
+
+// Beroende på feature flag, registrera MongoDB eller fallback (in-memory)
 bool useMongoDb = builder.Configuration.GetValue<bool>("FeatureFlags:UseMongoDb");
 
 if (useMongoDb)
 {
-    // Configure MongoDB options
-    builder.Services.Configure<MongoDbOptions>(
-        builder.Configuration.GetSection(MongoDbOptions.SectionName));
-
-    // Configure MongoDB client
-    builder.Services.AddSingleton<IMongoClient>(serviceProvider => {
-        var mongoDbOptions = builder.Configuration.GetSection(MongoDbOptions.SectionName).Get<MongoDbOptions>();
-        return new MongoClient(mongoDbOptions?.ConnectionString);
+    // Registrera MongoClient med säkerhetskontroll för connection string
+    builder.Services.AddSingleton<IMongoClient>(sp =>
+    {
+        var options = sp.GetRequiredService<IOptions<MongoDbOptions>>().Value;
+        if (string.IsNullOrWhiteSpace(options.ConnectionString))
+        {
+            throw new InvalidOperationException("MongoDB ConnectionString is not configured.");
+        }
+        return new MongoClient(options.ConnectionString);
     });
 
-    // Configure MongoDB collection
-    builder.Services.AddSingleton<IMongoCollection<Subscriber>>(serviceProvider => {
-        var mongoDbOptions = builder.Configuration.GetSection(MongoDbOptions.SectionName).Get<MongoDbOptions>();
-        var mongoClient = serviceProvider.GetRequiredService<IMongoClient>();
-        var database = mongoClient.GetDatabase(mongoDbOptions?.DatabaseName);
-        return database.GetCollection<Subscriber>(mongoDbOptions?.SubscribersCollectionName);
+    // Registrera MongoDB collection för subscribers (med litet "s")
+    builder.Services.AddSingleton<IMongoCollection<Subscriber>>(sp =>
+    {
+        var options = sp.GetRequiredService<IOptions<MongoDbOptions>>().Value;
+        var client = sp.GetRequiredService<IMongoClient>();
+        var database = client.GetDatabase(options.DatabaseName);
+        // Se till att värdet i konfigurationen för collectionnamnet är "subscribers" (små bokstäver)
+        return database.GetCollection<Subscriber>(options.SubscribersCollectionName);
     });
 
-    // Register MongoDB repository
+    // Registrera MongoDB repository
     builder.Services.AddSingleton<ISubscriberRepository, MongoDbSubscriberRepository>();
 
     Console.WriteLine("Using MongoDB repository");
 }
 else
 {
-    // Register in-memory repository as fallback
+    // Fallback: in-memory repository
     builder.Services.AddSingleton<ISubscriberRepository, InMemorySubscriberRepository>();
 
     Console.WriteLine("Using in-memory repository");
 }
 
-// Register service (depends on repository)
+// Registrera Newsletter service (beroende av repository)
 builder.Services.AddScoped<INewsletterService, NewsletterService>();
 
-// Add HttpContextAccessor for URL generation
+// Lägg till HttpContextAccessor
 builder.Services.AddHttpContextAccessor();
 
-// Configure Azure Blob options
+// Konfigurera Azure Blob options från sektionen "AzureBlob"
 builder.Services.Configure<AzureBlobOptions>(
-    builder.Configuration.GetSection(AzureBlobOptions.SectionName));
+    builder.Configuration.GetSection("AzureBlob"));
 
-// Check if Azure Storage should be used
+// Beroende på feature flag, registrera Azure Blob Storage image service
 bool useAzureStorage = builder.Configuration.GetValue<bool>("FeatureFlags:UseAzureStorage");
-
 if (useAzureStorage)
 {
-    // Register Azure Blob Storage image service for production
     builder.Services.AddSingleton<IImageService, AzureBlobImageService>();
     Console.WriteLine("Using Azure Blob Storage for images");
 }
 else
 {
-    // Register local image service for development
     builder.Services.AddSingleton<IImageService, LocalImageService>();
     Console.WriteLine("Using local storage for images");
 }
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Konfigurera HTTP request pipeline för production
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
-app.UseStaticFiles();
-
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseRouting();
-
 app.UseAuthorization();
-
-app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
-
 
 app.Run();
