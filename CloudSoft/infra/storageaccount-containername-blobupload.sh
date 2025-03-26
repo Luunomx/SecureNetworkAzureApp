@@ -7,7 +7,7 @@ STORAGE_ACCOUNT_NAME="securestorage$(date +%s)"  # Unikt namn för Storage Accou
 CONTAINER_NAME="securecontainer$(date +%s)"  # Unikt namn för Container
 STORAGE_SKU="Standard_LRS"
 BLOB_NAME="hero.jpg"
-LOCAL_FILE_PATH="C:/Users/hugoh/Desktop/storageaccount-containername-blobupload/$BLOB_NAME"
+LOCAL_FILE_PATH="C:/Users/91hughem/Desktop/StorageAccount/$BLOB_NAME"
 
 # 2. Skapa Storage Account med anonym åtkomst aktiverad
 echo "Skapar Storage Account '$STORAGE_ACCOUNT_NAME'..."
